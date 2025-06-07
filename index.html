@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Content Buddy 🌟</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Mitr:wght@400;600&family=Nunito:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"> </head>
+<body>
+    <div id="toastContainer" class="toast-container"></div>
+
+    <div class="container initial-hidden"> <header>
+            <h1>AI Content Buddy 🌟<i class="fas fa-sparkles"></i></h1> <p>มาสร้างบทความเจ๋งๆ ด้วย AI กัน! เขียน Prompt ให้ชัดเจนนะ</p>
+        </header>
+
+        <main>
+            <div class="input-section">
+                <div class="input-group">
+                    <textarea id="promptInput" placeholder="✨ ใส่หัวข้อ, คำถาม, หรือคำสั่งของคุณที่นี่... (เช่น 'เขียนบทความ AEO เกี่ยวกับ...' หรือ 'สรุปงานวิจัยเรื่อง...')"></textarea>
+                    <span class="textarea-tooltip">บอก AI ให้ชัดเจนว่าจะให้ทำอะไร!</span>
+                </div>
+
+                <div class="model-selection">
+                    <label for="aiModel"><i class="fas fa-robot"></i> เลือกโมเดล AI:</label>
+                    <select id="aiModel">
+                        <option value="gemini-1.5-flash-latest">Gemini Flash (เร็วและเบากว่า)</option>
+                        <option value="deepseek-coder">DeepSeek Coder</option>
+                    </select>
+                </div>
+
+                <div class="action-buttons">
+                    <button id="generateBtn" class="btn-primary">
+                        <i class="fas fa-magic"></i> สร้างเนื้อหา <span class="spinner-icon"></span>
+                    </button>
+                    <button id="saveCustomPromptBtn" class="btn-secondary">
+                        <i class="fas fa-save"></i> บันทึก Prompt ที่กำหนดเอง
+                    </button>
+                </div>
+            </div>
+
+            <div id="loadingIndicator" class="loading-spinner"></div>
+
+            <div class="output-section">
+                <h2>ผลลัพธ์จาก AI: <i class="fas fa-scroll"></i></h2>
+                <div id="resultOutput" class="result-box">
+                    <p class="placeholder-text">เนื้อหาที่สร้างโดย AI จะปรากฏที่นี่...</p>
+                </div>
+                <button id="copyBtn" class="btn-secondary">
+                    <i class="fas fa-copy"></i> คัดลอกเนื้อหา
+                </button>
+            </div>
+
+            <!-- Section for Predefined Prompt Templates (Optional, if you want to show them) -->
+            <div id="predefinedPromptTemplatesSection" class="prompt-templates-section output-section">
+                <h2><i class="fas fa-lightbulb"></i> ตัวอย่าง Prompt เริ่มต้น</h2>
+                <div id="promptTemplatesGrid" class="templates-grid">
+                    <p class="placeholder-text">กำลังโหลดตัวอย่าง Prompt...</p>
+                </div>
+            </div>
+
+            <div class="history-section output-section">
+                <h2><i class="fas fa-history"></i> ประวัติการสร้างเนื้อหา</h2>
+                <div id="searchHistory" class="history-list">
+                    <p class="placeholder-text">ยังไม่มีประวัติการสร้างเนื้อหา...</p>
+                </div>
+                <button id="clearHistoryBtn" class="btn-secondary" style="display: none;">
+                    <i class="fas fa-trash-alt"></i> ล้างประวัติ
+                </button>
+            </div>
+
+            <div id="mySavedPromptsSection" class="output-section">
+                <h2><i class="fas fa-bookmark"></i> Prompt ที่บันทึกไว้ของฉัน</h2>
+                <div id="mySavedPromptsList" class="templates-grid">
+                    <p class="placeholder-text">ยังไม่มี Prompt ที่บันทึกไว้...</p>
+                </div>
+                <div class="saved-prompts-actions">
+                    <button id="exportMySavedPromptsBtn" class="btn-secondary" style="display: none;">
+                        <i class="fas fa-download"></i> ส่งออก Prompt ที่บันทึกไว้
+                    </button>
+                    <button id="clearMySavedPromptsBtn" class="btn-secondary" style="display: none;">
+                        <i class="fas fa-trash-alt"></i> ล้าง Prompt ที่บันทึกไว้ทั้งหมด
+                    </button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,19 @@
+# .env
+.env
+# Dependencies
+node_modules/
+ai-backend/node_modules/
+
+# Environment variables
+.env
+ai-backend/.env
+
+# Log files
+access.log
+ai-backend/access.log
+
+# macOS specific
+.DS_Store
+
+# IDE specific (ตัวอย่างสำหรับ VS Code)
+.vscode/

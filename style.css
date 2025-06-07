@@ -1,0 +1,815 @@
+/* --- 1. CSS Variables for Easy Customization --- */
+/* การใช้ตัวแปรทำให้คุณเปลี่ยน Theme สีหรือ Font ได้ง่ายขึ้น */
+:root {
+    --primary-color: #ffb6c1; /* Pink pastel - สีชมพูหลัก */
+    --primary-hover-color: #ff99aa; /* Darker pink for hover */
+    --secondary-color: #87ceeb; /* Light blue - สีฟ้าหลัก */
+    --secondary-hover-color: #6a9cce; /* Darker blue for hover */
+
+    /* *** ปรับปรุงสีข้อความเพื่อให้ชัดเจนยิ่งขึ้น *** */
+    --text-color: #222; /* สีข้อความหลัก: เข้มขึ้นจาก #333 */
+    --light-text-color: #444; /* สีข้อความรอง: เข้มขึ้นจาก #555 */
+    --placeholder-color: #777; /* สีข้อความ Placeholder: เข้มขึ้นเล็กน้อย */
+
+    --background-gradient-start: #a1c4fd; /* ฟ้าอ่อน */
+    --background-gradient-end: #c2e9fb; /* ฟ้าอ่อนมาก */
+    --card-background: #fff; /* สีพื้นหลังกล่อง */
+
+    --border-light: #b0e0e6; /* สีเส้นขอบอ่อน */
+    --border-dark: #6a5acd; /* Purple for focus and key headings - สีม่วงเข้มสำหรับขอบเวลา Focus และหัวข้อสำคัญ */
+    
+    --box-shadow-light: rgba(0, 0, 0, 0.1); /* เงาเบาๆ */
+    --box-shadow-medium: rgba(0, 0, 0, 0.15); /* เงานุ่มปานกลาง */
+    --box-shadow-primary-glow: rgba(255, 182, 193, 0.4); /* เงาสีชมพู */
+    --box-shadow-secondary-glow: rgba(135, 206, 235, 0.4); /* เงาสีฟ้า */
+
+    --toast-success: #4CAF50; /* สีเขียวสำหรับ Success Toast */
+    --toast-error: #f44336; /* สีแดงสำหรับ Error Toast */
+    --toast-info: #2196F3; /* สีฟ้าสำหรับ Info Toast */
+
+    --transition-duration: 0.3s; /* กำหนดเวลา Transition มาตรฐาน */
+}
+
+/* --- 2. Base Styles --- */
+/* สไตล์พื้นฐานสำหรับ Body และองค์ประกอบทั่วไป */
+body {
+    font-family: 'Nunito', 'Mitr', sans-serif;
+    margin: 0;
+    padding: 20px;
+    background: linear-gradient(to right top, var(--background-gradient-start), var(--background-gradient-end));
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    color: var(--text-color); /* ใช้สีข้อความหลัก */
+    overflow-x: hidden; /* ป้องกัน scrollbar แนวนอนที่อาจเกิดจาก animation */
+    box-sizing: border-box; /* รวม padding และ border เข้าไปในความกว้าง/สูง */
+    line-height: 1.5; /* ลดความห่างบรรทัดลงเล็กน้อย */
+}
+
+/* --- 3. Layout & Container --- */
+/* การจัดวางและสไตล์ของ Container หลัก */
+.container {
+    background-color: var(--card-background);
+    border-radius: 25px;
+    box-shadow: 0 15px 30px var(--box-shadow-light);
+    padding: 40px;
+    max-width: 800px;
+    width: 100%;
+    text-align: center;
+    position: relative;
+    opacity: 0; /* ซ่อนไว้ก่อนสำหรับ initial animation (JavaScript จะเพิ่ม class 'fade-in') */
+    transform: translateY(20px); /* เริ่มต้นต่ำกว่าปกติเล็กน้อย */
+    transition: opacity 0.8s ease-out, transform 0.8s ease-out; /* Animation การปรากฏตัว */
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    gap: 18px; /* ลดช่องว่างระหว่าง section ต่างๆ จาก 25px เหลือ 18px */
+}
+
+/* Animation เมื่อ Container ปรากฏตัวครั้งแรก */
+.container.fade-in {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+header {
+    margin-bottom: 20px;
+}
+
+header h1 {
+    color: var(--border-dark); /* สีม่วงเข้ม */
+    margin-bottom: 10px;
+    font-size: 2.8em;
+    font-weight: 700; /* ทำให้หัวข้อเข้มขึ้น */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+header h1 .fas { /* ไอคอนในหัวข้อ H1 */
+    color: var(--primary-color); /* สีชมพู */
+    animation: sparkle 1.5s infinite alternate; /* เพิ่ม Animation กระพริบ */
+}
+
+header p {
+    color: var(--light-text-color); /* สีข้อความรอง */
+    font-size: 1.1em;
+    margin-bottom: 0;
+}
+
+/* สไตล์สำหรับ Input และ Output sections */
+.input-section, 
+.output-section,
+.prompt-templates-section,
+.history-section {
+    padding: 25px; /* เพิ่ม padding */
+    border-radius: 18px;
+    background-color: rgba(255, 255, 255, 0.7); /* พื้นหลังโปร่งแสงเล็กน้อย */
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+    transition: transform var(--transition-duration) ease-out, box-shadow var(--transition-duration) ease-out; /* เพิ่ม transition สำหรับ shadow */
+    box-sizing: border-box;
+}
+
+.input-section:hover, 
+.output-section:hover,
+.prompt-templates-section:hover,
+.history-section:hover {
+    transform: translateY(-5px); /* เลื่อนขึ้นเล็กน้อยเมื่อ Hover */
+    box-shadow: 0 8px 20px var(--box-shadow-medium); /* เงาเข้มขึ้นเล็กน้อย */
+}
+
+
+/* --- 4. Form/Input Components --- */
+/* สไตล์สำหรับช่องกรอกข้อมูลและปุ่มเลือก */
+.input-group {
+    position: relative;
+    margin-bottom: 20px; /* ลดระยะห่างจาก 25px เหลือ 20px */
+}
+
+textarea {
+    width: 100%; /* ทำให้เต็มความกว้างของ parent */
+    min-height: 150px;
+    padding: 15px;
+    border: 2px solid var(--border-light);
+    border-radius: 15px;
+    font-family: 'Nunito', 'Mitr', sans-serif;
+    font-size: 1.1em;
+    color: var(--text-color); /* ใช้สีข้อความหลัก */
+    resize: vertical; /* อนุญาตให้ปรับขนาดความสูงได้ */
+    outline: none;
+    transition: border-color var(--transition-duration) ease-in-out, box-shadow var(--transition-duration) ease-in-out;
+    box-sizing: border-box;
+}
+
+textarea::placeholder {
+    color: var(--placeholder-color); /* สี Placeholder */
+}
+
+textarea:focus {
+    border-color: var(--border-dark); /* สีม่วงเข้ม */
+    box-shadow: 0 0 0 4px rgba(106, 90, 205, 0.2); /* Soft glow on focus */
+}
+
+/* Tooltip สำหรับ Textarea */
+.textarea-tooltip {
+    position: absolute;
+    bottom: -25px; 
+    left: 10px;
+    font-size: 0.85em;
+    color: var(--placeholder-color);
+    opacity: 0;
+    transition: opacity var(--transition-duration) ease-out, transform var(--transition-duration) ease-out;
+    transform: translateY(5px);
+}
+
+/* Tooltip จะปรากฏเมื่อ Textarea ถูก Focus */
+textarea:focus + .textarea-tooltip {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.model-selection {
+    margin: 15px 0 20px 0; /* ลด margin ด้านล่างจาก 25px เหลือ 20px */
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap; /* ให้ห่อลงบรรทัดใหม่ได้บนจอเล็ก */
+}
+
+.model-selection label {
+    font-size: 1em;
+    color: var(--light-text-color); /* สีข้อความรอง */
+    font-weight: 600;
+}
+
+.model-selection select {
+    padding: 8px 12px;
+    border: 2px solid var(--border-light);
+    border-radius: 10px;
+    font-family: 'Nunito', 'Mitr', sans-serif;
+    font-size: 1em;
+    color: var(--text-color); /* ใช้สีข้อความหลัก */
+    background-color: var(--card-background);
+    cursor: pointer;
+    outline: none;
+    transition: border-color var(--transition-duration) ease-in-out, box-shadow var(--transition-duration) ease-in-out;
+}
+
+.model-selection select:focus {
+    border-color: var(--border-dark); /* สีม่วงเข้ม */
+    box-shadow: 0 0 0 3px rgba(106, 90, 205, 0.15); /* Soft glow on focus */
+}
+
+/* --- Optional: Layout for action buttons (wrap generate & save) --- */
+.action-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 15px; /* ระยะห่างระหว่างปุ่ม */
+    margin-top: 25px; /* Adjust margin from elements above, can be removed if buttons are not wrapped */
+    flex-wrap: wrap; /* Allow wrapping on small screens */
+}
+.action-buttons .btn-secondary {
+    margin-top: 0 !important; /* Override default margin-top if inside action-buttons */
+}
+
+
+/* --- 5. Buttons --- */
+/* สไตล์สำหรับปุ่มหลักและปุ่มรอง */
+.btn-primary, .btn-secondary, .btn-tool {
+    padding: 15px 30px;
+    border: none;
+    border-radius: 30px; /* ปุ่มกลมๆ */
+    font-size: 1.2em;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background-color var(--transition-duration) ease, transform 0.2s ease, box-shadow 0.2s ease;
+    outline: none;
+    display: inline-flex; /* ใช้ Flexbox เพื่อจัด icon และ text ในปุ่ม */
+    align-items: center;
+    justify-content: center;
+    gap: 10px; /* ระยะห่างระหว่าง icon กับ text */
+    text-decoration: none; /* เพื่อใช้กับ tag <button> หรือ <a> ได้ */
+    box-sizing: border-box;
+}
+
+/* ปุ่มหลัก (สำหรับ Generate) */
+.btn-primary {
+    background-color: var(--primary-color); /* สีชมพูหลัก */
+    color: white;
+    box-shadow: 0 8px 15px var(--box-shadow-primary-glow);
+}
+
+.btn-primary:hover {
+    background-color: var(--primary-hover-color); /* สีชมพูเข้มขึ้น */
+    transform: translateY(-3px); /* ยกขึ้นเล็กน้อย */
+    box-shadow: 0 12px 20px var(--box-shadow-primary-glow);
+}
+
+.btn-primary:active {
+    transform: translateY(0); /* กลับมาตำแหน่งเดิมเมื่อกด */
+    box-shadow: 0 5px 10px var(--box-shadow-primary-glow);
+}
+
+.btn-primary:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+    box-shadow: none;
+    transform: none;
+    opacity: 0.7; /* ลดความทึบแสงเมื่อ Disabled */
+}
+
+/* ปุ่มรอง (สำหรับ Copy, Clear History, Save Custom Prompt) */
+.btn-secondary {
+    background-color: var(--secondary-color); /* สีฟ้าหลัก */
+    color: white;
+    box-shadow: 0 5px 10px var(--box-shadow-secondary-glow);
+    margin-top: 15px; /* ระยะห่างจากด้านบน (หากไม่ได้ห่อด้วย .action-buttons) */
+    padding: 12px 25px; /* เล็กกว่าปุ่มหลักนิดหน่อย */
+    font-size: 1em;
+}
+
+.btn-secondary:hover {
+    background-color: var(--secondary-hover-color); /* สีฟ้าเข้มขึ้น */
+    transform: translateY(-2px);
+    box-shadow: 0 8px 15px var(--box-shadow-secondary-glow);
+}
+
+.btn-secondary:active {
+    transform: translateY(0);
+    box-shadow: 0 3px 8px var(--box-shadow-secondary-glow);
+}
+
+/* New: Tool Buttons */
+.content-tools {
+    display: flex;
+    flex-wrap: wrap; /* ให้ห่อลงบรรทัดใหม่ได้ */
+    gap: 10px;
+    justify-content: center;
+    margin-top: 20px; /* ระยะห่างจากกล่องผลลัพธ์ */
+    margin-bottom: 15px; /* ระยะห่างจากปุ่ม Copy */
+}
+
+.btn-tool {
+    background-color: #f7d9e4; /* สีชมพูอ่อนๆ */
+    color: var(--primary-color); /* สีข้อความเป็นสีชมพูเข้ม */
+    padding: 10px 18px;
+    border: 2px solid var(--primary-color);
+    border-radius: 20px;
+    font-size: 0.95em;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all var(--transition-duration) ease;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+}
+
+.btn-tool .fas {
+    margin-right: 8px;
+}
+
+.btn-tool:hover {
+    background-color: var(--primary-color);
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 10px var(--box-shadow-primary-glow);
+}
+
+
+/* --- 6. Output Section --- */
+/* สไตล์สำหรับกล่องแสดงผลลัพธ์ */
+.output-section h2 {
+    color: var(--border-dark); /* สีม่วงเข้ม */
+    font-size: 1.8em;
+    margin-bottom: 15px;
+}
+
+.output-section h2 .fas {
+    color: var(--secondary-color); /* สีฟ้า */
+    margin-left: 8px;
+}
+
+.result-box {
+    background-color: var(--card-background);
+    border: 2px dashed var(--border-light); /* เส้นประน่ารัก */
+    border-radius: 15px;
+    padding: 20px 30px; /* เพิ่ม padding ให้เนื้อหาไม่ติดขอบเกินไป */
+    min-height: 200px;
+    text-align: left;
+    white-space: pre-wrap; /* รักษารูปแบบช่องว่างและขึ้นบรรทัดใหม่ */
+    word-wrap: break-word; /* ตัดคำยาวๆ */
+    line-height: 1.5; /* ลดความห่างบรรทัดลงเล็กน้อย */
+    color: var(--text-color); /* ใช้สีข้อความหลัก */
+    overflow-y: auto; /* มี Scrollbar ถ้าเนื้อหายาวเกิน */
+    max-height: 400px;
+    transition: all var(--transition-duration) ease; /* สำหรับ animate การแสดงผล */
+    box-sizing: border-box;
+}
+
+/* สไตล์สำหรับข้อความที่สร้างโดย AI (สำหรับ Typewriter Effect ที่ถูกปิดใช้งาน) */
+.result-box p {
+    margin-bottom: 0.8em; /* ลดระยะห่างระหว่างย่อหน้าจาก 1em เหลือ 0.8em */
+    color: var(--text-color); 
+}
+
+.placeholder-text {
+    color: var(--placeholder-color); /* สี Placeholder */
+    font-style: italic;
+    opacity: 1 !important; /* ตรวจสอบให้แน่ใจว่า Placeholder แสดงผลเสมอ */
+}
+
+/* สไตล์สำหรับหัวข้อ H1, H2, H3 ที่มาจาก Markdown */
+.result-box h1 {
+    font-size: 2.5em;
+    color: var(--border-dark); /* สีม่วงเข้ม */
+    margin-top: 30px;
+    margin-bottom: 15px;
+    text-align: center;
+    font-weight: 700;
+}
+
+.result-box h2 {
+    font-size: 2em;
+    color: var(--border-dark); /* *** เปลี่ยนจาก --primary-color เป็น --border-dark เพื่อเพิ่มความชัดเจน *** */
+    margin-top: 25px;
+    margin-bottom: 12px;
+    border-bottom: 2px solid var(--border-light); /* ขีดเส้นใต้เบาๆ */
+    padding-bottom: 5px;
+    font-weight: 600;
+}
+
+.result-box h3 {
+    font-size: 1.5em;
+    color: var(--secondary-color); /* สีฟ้าหลัก */
+    margin-top: 20px;
+    margin-bottom: 10px;
+    font-weight: 600;
+}
+
+/* สไตล์สำหรับรายการ (list items) */
+.result-box ul {
+    list-style-type: none; /* ลบ bullet point เริ่มต้น */
+    padding-left: 0;
+    margin-bottom: 0.8em; /* ลดระยะห่างด้านล่างของ list จาก 1em เหลือ 0.8em */
+}
+
+.result-box ul li {
+    position: relative;
+    padding-left: 25px; /* เว้นที่ให้ custom bullet */
+    margin-bottom: 5px; /* ลดระยะห่างระหว่าง list item จาก 8px เหลือ 5px */
+    color: var(--light-text-color); /* สีข้อความรอง */
+}
+
+.result-box ul li::before {
+    content: "\f00c"; /* Font Awesome Checkmark icon */
+    font-family: "Font Awesome 6 Free";
+    font-weight: 900;
+    color: var(--primary-color); /* สีเดียวกับปุ่มหลัก */
+    position: absolute;
+    left: 0;
+    top: 0;
+}
+
+/* สไตล์สำหรับตัวหนา */
+.result-box strong {
+    color: var(--text-color); /* ใช้สีข้อความหลัก */
+    font-weight: 700;
+}
+
+/* --- 7. Loading Spinners & Animations --- */
+/* Spinner ขนาดใหญ่สำหรับแสดงการโหลดภาพรวม */
+.loading-spinner {
+    border: 6px solid #f3f3f3;
+    border-top: 6px solid var(--primary-color);
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+    margin: 30px auto;
+    display: none;
+}
+
+/* Spinner ขนาดเล็กที่อยู่ในปุ่ม */
+.spinner-icon {
+    display: inline-block; /* เพื่อให้หมุนได้ */
+    width: 1em;
+    height: 1em;
+    margin-left: 0; /* ซ่อนไว้ตอนแรก */
+    vertical-align: middle;
+    transition: margin-left var(--transition-duration) ease; /* Animation เมื่อ spinner ปรากฏ */
+}
+
+/* แสดงและหมุน spinner เมื่อปุ่มอยู่ในสถานะ loading */
+.btn-primary.loading .spinner-icon {
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin-left: 10px; /* ขยับออกมาเมื่อแสดง */
+}
+
+/* Keyframe Animations */
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+@keyframes sparkle {
+    0% { transform: scale(1) rotate(0deg); opacity: 1; }
+    50% { transform: scale(1.2) rotate(15deg); opacity: 0.8; }
+    100% { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+
+
+/* --- 8. Toast Notifications --- */
+/* Container สำหรับ Toast Message ที่จะเด้งขึ้นมา */
+.toast-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1000; /* ให้แสดงทับองค์ประกอบอื่น */
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+/* สไตล์สำหรับแต่ละ Toast Message */
+.toast-message {
+    background-color: white;
+    padding: 15px 20px;
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    color: var(--text-color);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    opacity: 0; /* ซ่อนไว้ตอนแรก */
+    transform: translateX(100%); /* เริ่มต้นจากด้านขวา */
+    animation: slideIn 0.5s forwards, fadeOut 0.5s 2.5s forwards; /* เข้ามา 0.5s, อยู่ 2s, ออกไป 0.5s */
+}
+
+/* สีขอบซ้ายสำหรับ Toast Type ต่างๆ */
+.toast-message.success {
+    border-left: 5px solid var(--toast-success);
+}
+
+.toast-message.error {
+    border-left: 5px solid var(--toast-error);
+}
+
+.toast-message.info {
+    border-left: 5px solid var(--toast-info);
+}
+
+/* สไตล์ไอคอนใน Toast */
+.toast-message .fas {
+    font-size: 1.2em;
+}
+.toast-message.success .fas { color: var(--toast-success); }
+.toast-message.error .fas { color: var(--toast-error); }
+.toast-message.info .fas { color: var(--toast-info); }
+
+
+/* Keyframe Animations สำหรับ Toast */
+@keyframes slideIn {
+    to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes fadeOut {
+    to { opacity: 0; transform: translateX(100%); }
+}
+
+/* --- 9. Prompt Templates Section --- */
+.prompt-templates-section {
+    text-align: center;
+}
+
+.prompt-templates-section h2 {
+    color: var(--border-dark); /* สีม่วงเข้ม */
+    font-size: 1.8em;
+    margin-bottom: 20px;
+}
+
+.prompt-templates-section h2 .fas {
+    color: var(--primary-color); /* สีชมพู */
+    margin-right: 10px;
+}
+
+.templates-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); /* ปรับตามขนาดจอ */
+    gap: 15px;
+    justify-content: center;
+}
+
+.template-item {
+    background-color: var(--secondary-color); /* สีฟ้าหลัก */
+    color: white;
+    padding: 15px;
+    border-radius: 12px;
+    cursor: pointer;
+    font-size: 1em;
+    font-weight: 600;
+    transition: background-color var(--transition-duration) ease, transform 0.2s ease, box-shadow 0.2s ease;
+    box-shadow: 0 5px 10px var(--box-shadow-secondary-glow);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    min-height: 60px; /* ให้มีขนาดเท่ากัน */
+    box-sizing: border-box;
+}
+
+.template-item:hover {
+    background-color: var(--secondary-hover-color); /* สีฟ้าเข้มขึ้น */
+    transform: translateY(-3px);
+    box-shadow: 0 8px 15px var(--box-shadow-secondary-glow);
+}
+
+.template-item:active {
+    transform: translateY(0);
+    box-shadow: 0 3px 8px var(--box-shadow-secondary-glow);
+}
+
+/* Style for custom prompt items */
+.template-item.custom-prompt-item {
+    background-color: #e6f7ff; /* สีฟ้าอ่อนสำหรับ custom prompts */
+    color: var(--secondary-hover-color); /* สีข้อความเข้มขึ้น */
+    border: 1px solid var(--secondary-color); /* เพิ่มขอบ */
+}
+
+.template-item.custom-prompt-item:hover {
+    background-color: var(--secondary-color); /* สีฟ้าหลักเมื่อ hover */
+    color: white;
+}
+
+/* Style for clear custom prompts button */
+.clear-custom-prompts-btn {
+    margin-top: 20px; /* ระยะห่างจาก templates */
+    width: auto;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+
+/* --- 10. History Section --- */
+.history-section {
+    text-align: center;
+}
+
+.history-section h2 {
+    color: var(--border-dark); /* สีม่วงเข้ม */
+    font-size: 1.8em;
+    margin-bottom: 20px;
+}
+
+.history-section h2 .fas {
+    color: var(--secondary-color); /* สีฟ้า */
+    margin-right: 10px;
+}
+
+.history-list {
+    text-align: left;
+    max-height: 300px; /* จำกัดความสูงของประวัติ */
+    overflow-y: auto; /* มี Scrollbar ถ้าเนื้อหายาวเกิน */
+    padding-right: 10px; /* เผื่อที่สำหรับ scrollbar */
+}
+
+.history-item {
+    background-color: #f8faff; /* สีฟ้าขาวอ่อนๆ */
+    border: 1px solid var(--border-light);
+    border-radius: 10px;
+    padding: 12px 15px;
+    margin-bottom: 10px;
+    cursor: pointer;
+    transition: background-color var(--transition-duration) ease, transform 0.2s ease, box-shadow 0.2s ease;
+    text-align: left;
+    word-wrap: break-word; /* ตัดคำยาวๆ */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.history-item:hover {
+    background-color: #e6f7ff; /* สีฟ้าอ่อนลง */
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.history-item .prompt-text {
+    font-weight: 600;
+    color: var(--text-color); /* ใช้สีข้อความหลักเพื่อให้ชัดเจน */
+    margin-bottom: 5px;
+    display: block; /* ให้ขึ้นบรรทัดใหม่ */
+    font-size: 1.05em;
+}
+
+.history-item .response-preview {
+    font-size: 0.9em;
+    color: var(--light-text-color); /* ใช้สีข้อความรอง */
+    white-space: nowrap; /* ไม่ตัดบรรทัด */
+    overflow: hidden; /* ซ่อนส่วนเกิน */
+    text-overflow: ellipsis; /* แสดง ... เมื่อข้อความยาว */
+    display: block;
+    margin-top: 5px;
+}
+
+.history-item .timestamp {
+    font-size: 0.8em;
+    color: #999; /* สี Timestamp ให้จางลงเล็กน้อย */
+    margin-top: 10px;
+    text-align: right;
+    display: block;
+}
+
+#clearHistoryBtn {
+    margin-top: 20px;
+    display: block; /* ให้ปุ่มอยู่คนละบรรทัด */
+    width: auto; /* ปรับขนาดตามเนื้อหา */
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* --- Styles for My Saved Prompts Actions --- */
+.saved-prompts-actions {
+    margin-top: 20px;
+    display: flex;
+    gap: 10px;
+    justify-content: center; /* Center buttons horizontally */
+    flex-wrap: wrap; /* Allow wrapping if space is tight */
+}
+
+.saved-prompts-actions .btn-secondary {
+    margin-top: 0; /* Override default margin-top for btn-secondary */
+}
+
+@media (max-width: 768px) {
+    .saved-prompts-actions {
+        flex-direction: column; /* Stack vertically on mobile */
+        align-items: center; /* Center buttons when stacked */
+    }
+}
+
+/* --- 11. Responsive Design --- */
+/* สไตล์ที่ปรับเปลี่ยนตามขนาดหน้าจอ */
+@media (max-width: 768px) {
+    body {
+        padding: 15px;
+    }
+
+    .container {
+        padding: 25px;
+        border-radius: 15px;
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.08);
+    }
+
+    header h1 {
+        font-size: 2em;
+    }
+
+    header p {
+        font-size: 1em;
+    }
+
+    textarea {
+        min-height: 120px;
+        padding: 12px;
+        font-size: 1em;
+        border-radius: 12px;
+    }
+
+    .model-selection {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+    
+    .model-selection select {
+        width: 100%;
+        box-sizing: border-box;
+        padding: 10px;
+        border-radius: 8px;
+    }
+
+    .btn-primary, .btn-secondary, .btn-tool {
+        padding: 12px 25px;
+        font-size: 1.1em;
+        border-radius: 25px;
+    }
+    .btn-primary {
+        box-shadow: 0 6px 12px var(--box-shadow-primary-glow);
+    }
+    .btn-secondary {
+        box-shadow: 0 6px 12px var(--box-shadow-secondary-glow);
+    }
+
+    /* Action buttons responsive */
+    .action-buttons {
+        flex-direction: column;
+        gap: 10px;
+        margin-top: 15px; /* Adjust if needed */
+    }
+    .action-buttons .btn-primary, .action-buttons .btn-secondary {
+        width: 100%;
+        max-width: 280px; /* Limit width */
+    }
+    .saved-prompts-actions .btn-secondary {
+        width: 100%;
+        max-width: 280px; /* Consistent with other action buttons */
+    }
+
+
+    .result-box {
+        min-height: 180px;
+        padding: 15px;
+        font-size: 0.95em;
+        border-radius: 12px;
+    }
+
+    /* Prompt Templates */
+    .templates-grid {
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); /* ลดขนาดบนมือถือ */
+    }
+
+    .template-item {
+        padding: 10px;
+        min-height: 50px;
+        font-size: 0.9em;
+    }
+
+    /* Content Tools */
+    .content-tools {
+        flex-direction: column; /* เรียงปุ่มเครื่องมือเป็นแนวตั้งบนมือถือ */
+        align-items: center;
+    }
+
+    .btn-tool {
+        width: 100%; /* ให้ปุ่มเครื่องมือเต็มความกว้าง */
+        max-width: 250px; /* จำกัดความกว้างสูงสุด */
+    }
+
+    /* History */
+    .history-list {
+        max-height: 250px; /* ลดความสูงของประวัติบนมือถือ */
+    }
+
+    #clearHistoryBtn {
+        width: 100%; /* ให้ปุ่มล้างประวัติเต็มความกว้าง */
+        max-width: 200px;
+    }
+}
+
+@media (max-width: 480px) {
+    .container {
+        padding: 20px;
+    }
+
+    header h1 {
+        font-size: 1.8em;
+    }
+
+    .btn-primary, .btn-secondary, .btn-tool {
+        width: 100%;
+        box-sizing: border-box;
+    }
+}
