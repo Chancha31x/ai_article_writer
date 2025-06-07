@@ -17,11 +17,11 @@ const DEEPSEEK_API_KEY = process.env.DEEPSEEK_API_KEY;
 
 // --- ตรวจสอบว่ามี API Keys ที่จำเป็น ---
 if (!GEMINI_API_KEY) {
-    console.error("Error: GEMINI_API_KEY is not set in .env file.");
+    console.error("CRITICAL ERROR: GEMINI_API_KEY is not set or is empty in .env file. Gemini models will not work.");
     // Consider exiting if Gemini is critical: process.exit(1);
 }
 if (!DEEPSEEK_API_KEY) {
-    console.warn("Warning: DEEPSEEK_API_KEY is not set in .env file. DeepSeek models will not work.");
+    console.warn("WARNING: DEEPSEEK_API_KEY is not set or is empty in .env file. DeepSeek models will not work.");
     // Consider exiting if DeepSeek is critical: process.exit(1);
 }
 
@@ -49,7 +49,12 @@ app.use(morgan('combined', { stream: accessLogStream }));
 let genAI, deepseekAI;
 
 if (GEMINI_API_KEY) {
-    genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
+    try {
+        genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
+    } catch (error) {
+        console.error("Error initializing GoogleGenerativeAI client:", error.message);
+        genAI = null; // Ensure it's null if initialization fails
+    }
 }
 if (DEEPSEEK_API_KEY) {
     deepseekAI = new OpenAI({ apiKey: DEEPSEEK_API_KEY, baseURL: 'https://api.deepseek.com/v1' });
@@ -67,7 +72,10 @@ app.post('/generate-content', async (req, res) => {
         let generatedText = '';
 
         if (selectedModel.startsWith('gemini-')) {
-            if (!genAI) return res.status(500).json({ error: 'Gemini AI client not initialized. Check GEMINI_API_KEY.' });
+            if (!genAI) {
+                console.error('Attempted to use Gemini model, but Gemini AI client is not initialized.');
+                return res.status(500).json({ error: 'Gemini AI client not initialized. Please check server logs and GEMINI_API_KEY.' });
+            }
             // The selectedModel from frontend (e.g., "gemini-1.5-flash-latest") is used directly.
             const model = genAI.getGenerativeModel({ model: selectedModel });
             const result = await model.generateContent(prompt);
@@ -76,6 +84,7 @@ app.post('/generate-content', async (req, res) => {
 
         } else if (selectedModel.startsWith('deepseek-')) {
             if (!deepseekAI) {
+                console.error('Attempted to use DeepSeek model, but DeepSeek AI client is not initialized.');
                 return res.status(500).json({ error: 'DeepSeek AI client not initialized. Check DEEPSEEK_API_KEY.' });
             }
             // The `selectedModel` from frontend (e.g., "deepseek-coder") is used directly
@@ -95,12 +104,14 @@ app.post('/generate-content', async (req, res) => {
         res.json({ text: generatedText }); // ส่งข้อความกลับไปให้ Frontend
 
     } catch (error) {
-        console.error(`Error calling AI API for model ${selectedModel}:`, error);
+        // Log the full error for server-side debugging, including stack trace
+        console.error(`Error processing request for model ${selectedModel}. Prompt: "${prompt.substring(0,100)}..."`, error.stack || error);
+
         let errorMessage = `Internal Server Error: ${error.message}`;
         if (error.response && error.response.data && error.response.data.error && error.response.data.error.message) {
             errorMessage = `AI API Error: ${error.response.data.error.message}`;
-        }
-        res.status(500).json({ error: errorMessage, details: error.stack });
+        } // Send a more generic error message to the client for security
+        res.status(500).json({ error: "An error occurred while processing your request with the AI model." });
     }
 });
 
