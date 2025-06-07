@@ -26,8 +26,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // ** สำคัญมาก: กำหนด URL ของ Backend Server ของคุณที่นี่ **
     // ** API Key ของ Gemini จะถูกเก็บไว้ที่ Backend Server **
-    // const BACKEND_API_URL = 'http://localhost:3001/generate-content'; // สำหรับการพัฒนาบนเครื่องตัวเอง
-    let backendApiUrlFromEnv = 'https://ec95-49-237-64-72.ngrok-free.app/generate-content'; // Default or from build process
+    const BACKEND_API_URL = 'http://localhost:3001/generate-content'; // เปลี่ยน URL นี้ถ้า Backend deploy ที่อื่น
 
 
     // --- Global Variables ---
