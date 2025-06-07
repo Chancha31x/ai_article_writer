@@ -283,7 +283,7 @@ textarea:focus + .textarea-tooltip {
     box-shadow: 0 3px 8px var(--box-shadow-secondary-glow);
 }
 
-/* New: Tool Buttons */
+/* --- 5.1 Tool Buttons (for Content Tools) --- */
 .content-tools {
     display: flex;
     flex-wrap: wrap; /* ให้ห่อลงบรรทัดใหม่ได้ */
@@ -291,7 +291,7 @@ textarea:focus + .textarea-tooltip {
     justify-content: center;
     margin-top: 20px; /* ระยะห่างจากกล่องผลลัพธ์ */
     margin-bottom: 15px; /* ระยะห่างจากปุ่ม Copy */
-}
+} /* This was already present, ensure it's styled as intended */
 
 .btn-tool {
     background-color: #f7d9e4; /* สีชมพูอ่อนๆ */
@@ -304,7 +304,7 @@ textarea:focus + .textarea-tooltip {
     cursor: pointer;
     transition: all var(--transition-duration) ease;
     box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
-}
+} /* This was already present, ensure it's styled as intended */
 
 .btn-tool .fas {
     margin-right: 8px;
