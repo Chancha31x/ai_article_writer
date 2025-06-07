@@ -23,14 +23,12 @@ document.addEventListener('DOMContentLoaded', () => {
         clearMySavedPromptsBtn: document.getElementById('clearMySavedPromptsBtn'),
         exportMySavedPromptsBtn: document.getElementById('exportMySavedPromptsBtn')
     };
-    // เพิ่ม element สำหรับปีปัจจุบันใน footer
-    elements.currentYearSpan = document.getElementById('currentYear');
 
     // ** สำคัญมาก: กำหนด URL ของ Backend Server ของคุณที่นี่ **
     // ** API Key ของ Gemini จะถูกเก็บไว้ที่ Backend Server **
     // const BACKEND_API_URL = 'http://localhost:3001/generate-content'; // สำหรับการพัฒนาบนเครื่องตัวเอง
-    // ตรวจสอบให้แน่ใจว่า URL นี้เป็น URL ปัจจุบันและถูกต้องจาก ngrok หากคุณใช้งาน ngrok
-    const BACKEND_API_URL = 'https://ec95-49-237-64-72.ngrok-free.app/generate-content';
+    let backendApiUrlFromEnv = 'https://ec95-49-237-64-72.ngrok-free.app/generate-content'; // Default or from build process
+
 
     // --- Global Variables ---
     let currentGeneratedText = '';
@@ -42,7 +40,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- 2. Helper Functions for UI ---
 
     function showToast(message, type) {
-        if (!elements.toastContainer) return; // ป้องกัน error ถ้า toastContainer ไม่มีอยู่
         const toast = document.createElement('div');
         toast.classList.add('toast-message', type);
         let icon = '';
@@ -65,71 +62,53 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function toggleLoadingState(isLoading) {
         if (isLoading) {
-            if (elements.loadingIndicator) elements.loadingIndicator.style.display = 'block';
-            if (elements.generateBtn) {
-                elements.generateBtn.disabled = true;
-                elements.generateBtn.classList.add('loading');
-            }
-            if (elements.resultOutput) elements.resultOutput.innerHTML = '<p class="placeholder-text">กำลังคิดอยู่แป๊บ... โปรดรอสักครู่ ✨</p>';
-            if (elements.copyBtn) elements.copyBtn.style.display = 'none';
+            elements.loadingIndicator.style.display = 'block';
+            elements.generateBtn.disabled = true;
+            elements.generateBtn.classList.add('loading');
+            elements.resultOutput.innerHTML = '<p class="placeholder-text">กำลังคิดอยู่แป๊บ... โปรดรอสักครู่ ✨</p>';
+            elements.copyBtn.style.display = 'none';
             if (elements.contentTools) elements.contentTools.style.display = 'none';
         } else {
-            if (elements.loadingIndicator) elements.loadingIndicator.style.display = 'none';
-            if (elements.generateBtn) {
-                elements.generateBtn.disabled = false;
-                elements.generateBtn.classList.remove('loading');
-            }
-            if (currentGeneratedText && elements.copyBtn) { // ตรวจสอบ copyBtn ด้วย
+            elements.loadingIndicator.style.display = 'none';
+            elements.generateBtn.disabled = false;
+            elements.generateBtn.classList.remove('loading');
+            if (currentGeneratedText) {
                 if (elements.contentTools) elements.contentTools.style.display = 'flex';
                 elements.copyBtn.style.display = 'block';
             }
         }
     }
 
-    // ฟังก์ชันนี้แสดงผล Markdown เป็น HTML (ชื่อเดิมคือ displayTypewriterEffect)
     function displayTypewriterEffect(markdownText) {
         currentGeneratedText = markdownText; // เก็บ text ที่สร้างล่าสุด (เป็น Markdown)
-        if (elements.resultOutput) {
-            elements.resultOutput.innerHTML = ''; // เคลียร์เนื้อหาเก่า
-            elements.resultOutput.style.opacity = '0'; // ซ่อนไว้ก่อนเพื่อการแสดงผลที่ราบรื่น
-            elements.resultOutput.style.transition = 'opacity 0.5s ease-in';
+        elements.resultOutput.innerHTML = ''; // เคลียร์เนื้อหาเก่า
+        elements.resultOutput.style.opacity = '0'; // ซ่อนไว้ก่อนเพื่อการแสดงผลที่ราบรื่น
+        elements.resultOutput.style.transition = 'opacity 0.5s ease-in';
 
-            try {
-                const htmlContent = marked.parse(markdownText);
-                elements.resultOutput.innerHTML = htmlContent;
-            } catch (error) {
-                console.error("Error parsing Markdown:", error);
-                elements.resultOutput.innerHTML = "<p style='color:red;'>เกิดข้อผิดพลาดในการแสดงผล Markdown</p>";
-            }
-            elements.resultOutput.style.opacity = '1';
-        }
+        const htmlContent = marked.parse(markdownText);
+        
+        elements.resultOutput.innerHTML = htmlContent;
+        
+        elements.resultOutput.style.opacity = '1'; 
         if (elements.contentTools) elements.contentTools.style.display = 'flex';
-        if (elements.copyBtn) elements.copyBtn.style.display = 'block';
+        elements.copyBtn.style.display = 'block';
     }
 
     // --- 3. History Management Functions ---
     function saveHistory() {
-        try {
-            localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
-        } catch (error) {
-            console.error("Error saving history to localStorage:", error);
-            showToast("ไม่สามารถบันทึกประวัติได้", "error");
-        }
+        localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
         renderHistory();
         toggleClearHistoryButton();
     }
 
     function loadHistory() {
-        try {
-            const storedHistory = localStorage.getItem(HISTORY_KEY);
-            if (storedHistory) {
-                history = JSON.parse(storedHistory);
-            }
-        } catch (error) {
-            console.error("Error loading history from localStorage:", error);
-            history = []; // Reset history on error
+        const storedHistory = localStorage.getItem(HISTORY_KEY);
+        if (storedHistory) {
+            history = JSON.parse(storedHistory);
+            renderHistory();
+        } else {
+            elements.searchHistory.innerHTML = '<p class="placeholder-text">ยังไม่มีประวัติการสร้างเนื้อหา...</p>';
         }
-        renderHistory(); // Always render, even if empty or error
         toggleClearHistoryButton();
     }
 
@@ -146,10 +125,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function renderHistory() {
-        if (!elements.searchHistory) return; // ป้องกัน error ถ้า searchHistory ไม่มีอยู่
         elements.searchHistory.innerHTML = '';
         if (history.length === 0) {
-            elements.searchHistory.innerHTML = '<p class="placeholder-text">ยังไม่มีประวัติการสร้างเนื้อหา...</p>'; // แสดง placeholder ถ้าไม่มีประวัติ
+            elements.searchHistory.innerHTML = '<p class="placeholder-text">ยังไม่มีประวัติการสร้างเนื้อหา...</p>';
             toggleClearHistoryButton();
             return;
         }
@@ -375,19 +353,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- 4.1 Custom Prompt Management Functions ---
     function loadCustomPrompts() {
-        try {
-            const storedCustomPrompts = localStorage.getItem(CUSTOM_PROMPTS_KEY);
-            if (storedCustomPrompts) {
-                customPrompts = JSON.parse(storedCustomPrompts);
-            }
-        } catch (error) {
-            console.error("Error loading custom prompts from localStorage:", error);
-            customPrompts = []; // Reset on error
+        const storedCustomPrompts = localStorage.getItem(CUSTOM_PROMPTS_KEY);
+        if (storedCustomPrompts) {
+            customPrompts = JSON.parse(storedCustomPrompts);
         }
     }
 
     function saveCustomPrompt() {
-        if (!elements.promptInput) return;
         const prompt = elements.promptInput.value.trim();
         if (prompt === '') {
             showToast('กรุณาป้อน Prompt ที่ต้องการบันทึกก่อน!', 'error');
@@ -406,12 +378,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         customPrompts.unshift({ name: `[กำหนดเอง] ${promptName}`, prompt: prompt });
         if (customPrompts.length > 20) customPrompts.pop(); // จำกัดจำนวน Prompt ที่กำหนดเองไม่เกิน 20 รายการ
-        try {
-            localStorage.setItem(CUSTOM_PROMPTS_KEY, JSON.stringify(customPrompts));
-        } catch (error) {
-            console.error("Error saving custom prompts to localStorage:", error);
-            showToast("ไม่สามารถบันทึก Prompt ที่กำหนดเองได้", "error");
-        }
+        localStorage.setItem(CUSTOM_PROMPTS_KEY, JSON.stringify(customPrompts));
         renderMySavedPrompts(); // Render "My Saved Prompts" section
         showToast('บันทึก Prompt ที่กำหนดเองแล้ว!', 'success');
     }
@@ -419,12 +386,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function clearCustomPrompts() {
         if (confirm('คุณแน่ใจหรือไม่ว่าต้องการลบ Prompt ที่กำหนดเองทั้งหมด?')) {
             customPrompts = [];
-            try {
-                localStorage.removeItem(CUSTOM_PROMPTS_KEY);
-            } catch (error) {
-                console.error("Error clearing custom prompts from localStorage:", error);
-                // Continue to update UI even if localStorage fails
-            }
+            localStorage.removeItem(CUSTOM_PROMPTS_KEY);
             renderMySavedPrompts(); // Update "My Saved Prompts" section
             showToast('ลบ Prompt ที่กำหนดเองแล้ว!', 'info');
         }
@@ -498,12 +460,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function handleTemplateClick(event) {
         const templateItem = event.target.closest('.template-item');
-        if (templateItem && templateItem.dataset.prompt && elements.promptInput) {
+        if (templateItem && templateItem.dataset.prompt) {
             elements.promptInput.value = templateItem.dataset.prompt;
             const message = templateItem.classList.contains('custom-prompt-item') ? 
                             'โหลด Prompt ที่บันทึกไว้แล้ว!' : 'โหลด Prompt ตัวอย่างแล้ว!';
             showToast(message, 'info');
-            elements.promptInput.focus(); // ให้ cursor ไปที่ช่อง input
+            elements.promptInput.focus();
         }
     }
 
@@ -515,8 +477,8 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        const toolId = event.currentTarget ? event.currentTarget.id : null;
-        const toneType = event.currentTarget ? event.currentTarget.dataset.toneType : null;
+        const toolId = event.currentTarget.id; 
+        const toneType = event.currentTarget.dataset.toneType;
 
         let promptModifier = '';
         let actionMessage = '';
@@ -538,7 +500,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (promptModifier) {
             const fullPrompt = `${promptModifier}\n\n${currentText}`;
-            if (elements.promptInput) elements.promptInput.value = fullPrompt;
+            elements.promptInput.value = fullPrompt;
             showToast(actionMessage, 'info');
             await handleGenerateClick(true);
         }
@@ -551,21 +513,15 @@ document.addEventListener('DOMContentLoaded', () => {
      * @param {boolean} [isToolAction=false] - True if called from a content tool, false otherwise.
      */
     async function handleGenerateClick(isToolAction = false) {
-        const prompt = elements.promptInput ? elements.promptInput.value.trim() : '';
-        const selectedModel = elements.aiModelSelect ? elements.aiModelSelect.value : 'gemini-1.5-flash-latest'; // Default model
+        const prompt = elements.promptInput.value.trim();
+        const selectedModel = elements.aiModelSelect.value; 
 
         if (prompt === '') {
             showToast('กรุณาป้อนหัวข้อหรือคำสั่งของคุณก่อนนะครับ! 😊', 'error');
             return;
         }
 
-        if (!BACKEND_API_URL || BACKEND_API_URL.includes('YOUR_NGROK_URL_HERE') || BACKEND_API_URL.trim() === '/generate-content') {
-            showToast('ข้อผิดพลาด: ไม่ได้ตั้งค่า URL ของ Backend Server อย่างถูกต้องใน script.js', 'error');
-            toggleLoadingState(false); // Ensure loading state is reset
-            return;
-        }
         toggleLoadingState(true);
-
 
         try {
             const response = await fetch(BACKEND_API_URL, { 
@@ -582,7 +538,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!response.ok) {
                 const errorData = await response.json().catch(() => null);
                 let errorMessage = `เกิดข้อผิดพลาดจาก Server Backend: ${response.status} ${response.statusText}`;
-                if (errorData && errorData.error && typeof errorData.error === 'string') { // ตรวจสอบ errorData.error
+                if (errorData && errorData.error) {
                     errorMessage = `Backend Error: ${errorData.error}`;
                 }
                 throw new Error(errorMessage);
@@ -602,29 +558,25 @@ document.addEventListener('DOMContentLoaded', () => {
                     addPromptToHistory(prompt, generatedText, selectedModel);
                 }
             } else {
-                if (elements.resultOutput) elements.resultOutput.innerHTML = '<p style="color: red;">ไม่ได้รับเนื้อหาจาก AI โปรดลองใหม่อีกครั้ง หรืออาจถูกเซ็นเซอร์</p>';
+                elements.resultOutput.innerHTML = '<p style="color: red;">ไม่ได้รับเนื้อหาจาก AI โปรดลองใหม่อีกครั้ง หรืออาจถูกเซ็นเซอร์</p>';
                 showToast('ไม่สามารถสร้างเนื้อหาได้ โปรดลองอีกครั้ง', 'error');
-                if (elements.copyBtn) elements.copyBtn.style.display = 'none';
+                elements.copyBtn.style.display = 'none';
                 if (elements.contentTools) elements.contentTools.style.display = 'none';
             }
 
         } catch (error) {
             console.error('Fetch error:', error);
-            if (elements.resultOutput) {
-                elements.resultOutput.innerHTML = `<p style="color: red;">เกิดข้อผิดพลาด: ${error.message} <br>โปรดตรวจสอบ Server Backend, การเชื่อมต่ออินเทอร์เน็ต, หรือ URL ของ Backend ใน script.js</p>`;
-            }
+            elements.resultOutput.innerHTML = `<p style="color: red;">เกิดข้อผิดพลาด: ${error.message} <br>โปรดตรวจสอบ Server Backend ของคุณ</p>`;
             showToast(`เกิดข้อผิดพลาด: ${error.message.substring(0, 50)}...`, 'error');
-            if (elements.copyBtn) elements.copyBtn.style.display = 'none';
+            elements.copyBtn.style.display = 'none';
             if (elements.contentTools) elements.contentTools.style.display = 'none';
         } finally {
             toggleLoadingState(false);
         }
     }
 
-    // ฟังก์ชันคัดลอกเนื้อหา (คัดลอก HTML)
     function handleCopyClick() {
-        if (!elements.resultOutput) return;
-        const textToCopy = elements.resultOutput.innerHTML; // คัดลอก HTML content
+        const textToCopy = elements.resultOutput.innerHTML;
         
         const tempTextArea = document.createElement('textarea');
         tempTextArea.value = textToCopy;
@@ -637,12 +589,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- 7. Event Listeners ---
-    if (elements.generateBtn) {
-        elements.generateBtn.addEventListener('click', () => handleGenerateClick(false));
-    }
-    if (elements.copyBtn) {
-        elements.copyBtn.addEventListener('click', handleCopyClick);
-    }
+    elements.generateBtn.addEventListener('click', () => handleGenerateClick(false));
+    elements.copyBtn.addEventListener('click', handleCopyClick);
 
     // Event listener for predefined prompt templates
     if (elements.promptTemplatesGrid) {
@@ -656,12 +604,12 @@ document.addEventListener('DOMContentLoaded', () => {
         elements.searchHistory.addEventListener('click', (event) => {
             const item = event.target.closest('.history-item');
             if (item) {
-                const index = parseInt(item.dataset.index, 10); // เพิ่ม radix parameter
+                const index = parseInt(item.dataset.index);
                 const selectedHistory = history[index];
                 if (selectedHistory) {
-                    if (elements.promptInput) elements.promptInput.value = selectedHistory.prompt;
+                    elements.promptInput.value = selectedHistory.prompt;
                     displayTypewriterEffect(selectedHistory.response);
-                    if (elements.aiModelSelect) elements.aiModelSelect.value = selectedHistory.model;
+                    elements.aiModelSelect.value = selectedHistory.model;
                     showToast('โหลดประวัติการค้นหาแล้ว!', 'info');
                 }
             }
@@ -690,11 +638,6 @@ document.addEventListener('DOMContentLoaded', () => {
         elements.exportMySavedPromptsBtn.addEventListener('click', exportCustomPrompts);
     }
 
-    // --- Function to update current year in footer ---
-    function updateFooterYear() {
-        if (elements.currentYearSpan) elements.currentYearSpan.textContent = new Date().getFullYear();
-    }
-
     // --- 8. Initial Setup ---
     setTimeout(() => {
         if (elements.container) {
@@ -703,7 +646,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }, 100);
 
-    updateFooterYear(); // อัปเดตปีใน footer เมื่อโหลดหน้า
     loadHistory();
     loadCustomPrompts();
     renderPredefinedPrompts(); // Render predefined templates
