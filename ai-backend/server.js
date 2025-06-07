@@ -104,8 +104,10 @@ app.post('/generate-content', async (req, res) => {
     }
 });
 
+// กำหนด Host ที่จะให้ Server รับฟัง (0.0.0.0 หมายถึงทุก IPv4 interfaces)
+const HOST = '0.0.0.0';
 // เริ่มต้น Server
-app.listen(PORT, () => {
-    console.log(`Backend server running on http://localhost:${PORT}`);
+app.listen(PORT, HOST, () => {
+    console.log(`Backend server running on http://${HOST === '0.0.0.0' ? 'localhost' : HOST}:${PORT} (accessible on all network interfaces)`);
     console.log(`Access logs will be written to ${path.join(__dirname, 'access.log')}`); // <--- เพิ่ม: แจ้งตำแหน่งไฟล์ Log
 });
