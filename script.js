@@ -134,11 +134,20 @@ document.addEventListener('DOMContentLoaded', () => {
         history.forEach((item, index) => {
             const historyItem = document.createElement('div');
             historyItem.classList.add('history-item');
+            // --- ปรับปรุงการแสดงผล ---
             historyItem.innerHTML = `
-                <span class="prompt-text">${item.prompt}</span>
-                <span class="response-preview">${item.response.substring(0, 80)}...</span>
-                <span class="timestamp">${item.timestamp}</span>
+                <div class="history-item-header">
+                    <span class="history-prompt-preview"><strong>คำสั่ง:</strong> ${item.prompt.substring(0, 100)}${item.prompt.length > 100 ? '...' : ''}</span>
+                    <span class="history-model-used"><strong>โมเดล:</strong> ${item.model}</span>
+                </div>
+                <div class="history-item-body">
+                    <p class="history-response-preview"><strong>ผลลัพธ์ (ตัวอย่าง):</strong> ${item.response.substring(0, 120)}...</p>
+                </div>
+                <div class="history-item-footer">
+                    <span class="history-timestamp">${item.timestamp}</span>
+                </div>
             `;
+            // --- สิ้นสุดการปรับปรุง ---
             historyItem.dataset.index = index;
             elements.searchHistory.appendChild(historyItem);
         });
@@ -166,7 +175,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 ## [H2: ชื่อบทความที่น่าสนใจและตอบคำถามหลักทันที]
 
-[ย่อหน้าแรก (p): บทนำที่กระชับและน่าสนใจ โดยตอบคำถามหลักของหัวข้อโดยตรง (direct answer) และใช้ **ตัวหนา** เน้นคำสำคัญ]
+[ย่อหน้าแรก (p): บทนำที่กระชับและน่าสนใจ โดยตอบคำถามหลักของหัวข้อโดยตรง (direct answer) และใช้ **ตัวหนา** เน้นคำสำคัญ] 
 
 ### คำถามหลักที่พบบ่อย (FAQs) - **ส่วนนี้ต้องมีและเป็นคำถามที่พบบ่อยเกี่ยวกับหัวข้อโดยตรง**
 - **คำถาม 1:** [ตอบคำถามโดยตรงและกระชับในรูปแบบ p หรือ ul/li]
