@@ -46,6 +46,23 @@
                 <div id="resultOutput" class="result-box">
                     <p class="placeholder-text">เนื้อหาที่สร้างโดย AI จะปรากฏที่นี่...</p>
                 </div>
+                <!-- เพิ่มส่วน Content Tools ที่นี่ -->
+                <div id="contentTools" class="content-tools" style="display: none;">
+                    <button id="summarizeBtn" class="btn-tool">
+                        <i class="fas fa-compress-alt"></i> ย่อเนื้อหา
+                    </button>
+                    <button id="expandBtn" class="btn-tool">
+                        <i class="fas fa-expand-alt"></i> ขยายเนื้อหา
+                    </button>
+                    <button id="toneProfessionalBtn" class="btn-tool" data-tone-type="professional">
+                        <i class="fas fa-user-tie"></i> โทนทางการ
+                    </button>
+                    <button id="toneCasualBtn" class="btn-tool" data-tone-type="casual">
+                        <i class="fas fa-comments"></i> โทนเป็นกันเอง
+                    </button>
+                </div>
+                <!-- สิ้นสุดส่วน Content Tools -->
+
                 <button id="copyBtn" class="btn-secondary">
                     <i class="fas fa-copy"></i> คัดลอกเนื้อหา
                 </button>
@@ -87,7 +104,7 @@
     </div>
 
     <footer>
-        <p>&copy; 2025 AI Content Buddy by Chacha Ritsak. All Rights Reserved.</p>
+        <p>&copy; <span id="currentYear">2024</span> AI Content Buddy by Chacha Ritsak. All Rights Reserved.</p>
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
