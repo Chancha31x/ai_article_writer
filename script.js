@@ -94,6 +94,7 @@ document.addEventListener('DOMContentLoaded', () => {
             elements.resultOutput.style.opacity = '0'; // ซ่อนไว้ก่อนเพื่อการแสดงผลที่ราบรื่น
             elements.resultOutput.style.transition = 'opacity 0.5s ease-in';
 
+        console.log('Markdown to parse:', typeof markdownText, markdownText); // เพิ่มบรรทัดนี้เพื่อ debug
             try {
                 // ใช้ marked.parse() เพื่อแปลง Markdown เป็น HTML ดิบ
                 const rawHtml = marked.parse(markdownText);
