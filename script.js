@@ -28,10 +28,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // ** สำคัญมาก: กำหนด URL ของ Backend Server ของคุณที่นี่ **
     // ** API Key ของ Gemini จะถูกเก็บไว้ที่ Backend Server **
-    // สำหรับ Production: URL นี้ควรชี้ไปยัง Public URL ของ Backend ที่ deploy แล้ว
-    // const BACKEND_API_URL = 'http://localhost:8080/generate-content'; // สำหรับการพัฒนาบนเครื่องตัวเอง (ถ้า Backend รันบนเครื่องเดียวกัน)
-    const BACKEND_API_URL = 'https://503f-49-237-35-189.ngrok-free.app/generate-content'; // <--- ใส่ Public URL จริงของ Backend ที่ Deploy แล้วที่นี่
-
+    const BACKEND_API_URL = 'https://c77e-49-237-45-59.ngrok-free.app/generate-content'; // <--- อัปเดตเป็น HTTPS และ IP ของ Ubuntu Server (Port 443 เป็น default ไม่ต้องระบุ)
     // --- Global Variables ---
     let currentGeneratedText = '';
     const HISTORY_KEY = 'aiContentHistory';
@@ -45,6 +42,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!elements.toastContainer) return; // ป้องกัน error ถ้า toastContainer ไม่มีอยู่
         const toast = document.createElement('div');
         toast.classList.add('toast-message', type);
+        toast.setAttribute('role', type === 'error' ? 'alert' : 'status'); // Accessibility improvement
         let icon = '';
         if (type === 'success') {
             icon = '<i class="fas fa-check-circle"></i>';
@@ -97,8 +95,10 @@ document.addEventListener('DOMContentLoaded', () => {
             elements.resultOutput.style.transition = 'opacity 0.5s ease-in';
 
             try {
-                const htmlContent = marked.parse(markdownText); // ควรตรวจสอบ options ของ marked เพื่อความปลอดภัย
-                elements.resultOutput.innerHTML = htmlContent;
+                // ใช้ marked.parse() เพื่อแปลง Markdown เป็น HTML ดิบ
+                const rawHtml = marked.parse(markdownText);
+                // ใช้ DOMPurify เพื่อ sanitize HTML ก่อนนำไปแสดงผล
+                elements.resultOutput.innerHTML = DOMPurify.sanitize(rawHtml);
             } catch (error) {
                 console.error("Error parsing Markdown:", error);
                 elements.resultOutput.innerHTML = "<p style='color:red;'>เกิดข้อผิดพลาดในการแสดงผล Markdown</p>";
@@ -623,17 +623,37 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function handleCopyClick() {
-        if (!elements.resultOutput) return;
-        const textToCopy = elements.resultOutput.innerHTML; // Copies HTML content
-        
-        const tempTextArea = document.createElement('textarea');
-        tempTextArea.value = textToCopy;
-        document.body.appendChild(tempTextArea);
-        tempTextArea.select();
-        document.execCommand('copy');
-        document.body.removeChild(tempTextArea);
+        if (!currentGeneratedText) { // ตรวจสอบจาก currentGeneratedText (Markdown ดิบ)
+            showToast('ยังไม่มีเนื้อหาให้คัดลอก', 'error');
+            return;
+        }
 
-        showToast('คัดลอกเนื้อหาเรียบร้อยแล้ว! ✨', 'success');
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(currentGeneratedText) // คัดลอก Markdown ดิบ
+                .then(() => {
+                    showToast('คัดลอกเนื้อหา (Markdown) เรียบร้อยแล้ว! ✨', 'success');
+                })
+                .catch(err => {
+                    console.error('Failed to copy text: ', err);
+                    showToast('ไม่สามารถคัดลอกเนื้อหาได้', 'error');
+                });
+        } else {
+            // Fallback for older browsers (though less likely needed if execCommand was working)
+            // You could re-implement the textarea method here if broad compatibility is paramount
+            // and you want to copy currentGeneratedText instead of innerHTML.
+            const tempTextArea = document.createElement('textarea');
+            tempTextArea.value = currentGeneratedText; // คัดลอก Markdown ดิบ
+            document.body.appendChild(tempTextArea);
+            tempTextArea.select();
+            try {
+                document.execCommand('copy');
+                showToast('คัดลอกเนื้อหา (Markdown) เรียบร้อยแล้ว! (Fallback) ✨', 'success');
+            } catch (err) {
+                console.error('Fallback copy failed: ', err);
+                showToast('ไม่สามารถคัดลอกเนื้อหาได้ (Fallback)', 'error');
+            }
+            document.body.removeChild(tempTextArea);
+        }
     }
 
     // --- 7. Event Listeners ---
