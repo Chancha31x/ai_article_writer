@@ -4,10 +4,10 @@ const express = require('express');
 const cors = require('cors');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 const { OpenAI } = require('openai'); // OpenAI SDK is used for DeepSeek (OpenAI-compatible API)
-const morgan = require('morgan'); // <--- เพิ่ม: import morgan
-const rateLimit = require('express-rate-limit'); // <--- เพิ่ม: import express-rate-limit
-const path = require('path');     // <--- เพิ่ม: import path
-const fs = require('fs');         // <--- เพิ่ม: import fs
+const morgan = require('morgan');
+const rateLimit = require('express-rate-limit');
+const path = require('path');
+const fs = require('fs');
 
 const app = express();
 const PORT = process.env.PORT || 8080; // เปลี่ยนเป็น Port ที่ต้องการ เช่น 8080
@@ -27,20 +27,30 @@ if (!DEEPSEEK_API_KEY) {
 }
 
 // --- ตั้งค่า CORS ---
-const whitelist = ['https://ai-content-buddy.netlify.app', 'http://localhost:8080', 'http://127.0.0.1:8080']; // เพิ่ม localhost สำหรับการพัฒนา
-const corsOptions = {
+// เพิ่ม IP Address สาธารณะของเซิร์ฟเวอร์ และทุก Origin สำหรับการทดสอบ (ถ้าจำเป็น)
+const allowedOrigins = [
+    'https://ai-content-buddy.netlify.app',
+    'http://localhost:8080',
+    'http://127.0.0.1:8080',
+    'http://147.50.230.61:8080' // *** สำคัญ: เพิ่ม IP สาธารณะของคุณที่นี่ ***
+];
+
+// สำหรับการพัฒนา/ทดสอบ: อนุญาตทุก origin (ในบางกรณีอาจสะดวกกว่า)
+// ใน Production ควรระบุ origin ที่แน่นอนเท่านั้นเพื่อความปลอดภัย
+// app.use(cors()); // ถ้าต้องการอนุญาตทุก Origin ในการพัฒนา
+
+app.use(cors({
   origin: function (origin, callback) {
-    if (whitelist.indexOf(origin) !== -1 || !origin) { // อนุญาต !origin สำหรับการเรียกจาก server-to-server หรือ REST tools
+    // อนุญาต origin ที่อยู่ใน whitelist หรือ origin ที่เป็น undefined (เช่น การเรียกจาก file:// หรือ REST tools)
+    if (allowedOrigins.indexOf(origin) !== -1 || !origin) {
       callback(null, true);
     } else {
+      console.warn(`CORS: Origin "${origin}" not allowed.`);
       callback(new Error('Not allowed by CORS'));
     }
   }
-};
-// ตั้งค่า CORS เพื่อให้ Frontend เรียกได้
-// สำหรับการพัฒนา: อนุญาตทุกโดเมน
-// สำหรับการผลิต: กำหนดโดเมนของ Frontend ที่แน่นอน
-app.use(cors(corsOptions));
+}));
+
 
 // --- เพิ่ม: การตั้งค่าให้ Express เชื่อถือ Reverse Proxy ---
 // หาก Node.js server ของคุณทำงานอยู่หลัง reverse proxy (เช่น Nginx)
@@ -53,10 +63,10 @@ app.use(express.json());
 
 // --- เพิ่ม: การตั้งค่า Rate Limiting ---
 const apiLimiter = rateLimit({
-	windowMs: 15 * 60 * 1000, // 15 นาที
-	max: 100, // จำกัดแต่ละ IP ให้เรียกได้ 100 ครั้งต่อ 15 นาที
-	standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
-	legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+    windowMs: 15 * 60 * 1000, // 15 นาที
+    max: 100, // จำกัดแต่ละ IP ให้เรียกได้ 100 ครั้งต่อ 15 นาที
+    standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
+    legacyHeaders: false, // Disable the `X-RateLimit-*` headers
     message: { error: 'Too many requests from this IP, please try again after 15 minutes' }
 });
 app.use('/generate-content', apiLimiter); // ใช้ limiter กับ endpoint นี้
@@ -70,7 +80,7 @@ const accessLogStream = fs.createWriteStream(path.join(__dirname, 'access.log'),
 app.use(morgan('combined', { stream: accessLogStream }));
 
 // (Optional) คุณสามารถเพิ่ม morgan สำหรับแสดง Log ใน console ระหว่างการพัฒนาได้ด้วย
-// app.use(morgan('dev')); 
+// app.use(morgan('dev'));
 // --- จบ: การตั้งค่า Logging ---
 
 // --- Initialize AI Clients ---
@@ -118,7 +128,7 @@ app.post('/generate-content', async (req, res) => {
             // The `selectedModel` from frontend (e.g., "deepseek-coder") is used directly
             // as the model identifier for the DeepSeek API.
             const completion = await deepseekAI.chat.completions.create({
-                model: selectedModel, 
+                model: selectedModel,
                 messages: [{ role: "user", content: prompt }],
                 // max_tokens: 1024, // Optional: configure as needed
                 // stream: false, // Set to true if you want to handle streaming
@@ -138,7 +148,7 @@ app.post('/generate-content', async (req, res) => {
         let errorMessage = `Internal Server Error: ${error.message}`;
         if (error.response && error.response.data && error.response.data.error && error.response.data.error.message) {
             errorMessage = `AI API Error: ${error.response.data.error.message}`;
-        } // Send a more generic error message to the client for security
+        }
         res.status(500).json({ error: "An error occurred while processing your request with the AI model." });
     }
 });
@@ -151,7 +161,7 @@ app.post('/generate-content', async (req, res) => {
 // กำหนด Host ที่จะให้ Server รับฟัง (0.0.0.0 หมายถึงทุก IPv4 interfaces)
 const HOST = '0.0.0.0';
 // เริ่มต้น Server
-app.listen(PORT, () => {
-    console.log(`Backend server running on http://localhost:${PORT}`);
-    console.log(`Access logs will be written to ${path.join(__dirname, 'access.log')}`); // <--- เพิ่ม: แจ้งตำแหน่งไฟล์ Log
+app.listen(PORT, HOST, () => { // เพิ่ม HOST ตรงนี้
+    console.log(`Backend server running on http://${HOST}:${PORT}`); // ปรับปรุงข้อความ log ให้ชัดเจนขึ้น
+    console.log(`Access logs will be written to ${path.join(__dirname, 'access.log')}`);
 });
