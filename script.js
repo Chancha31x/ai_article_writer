@@ -28,7 +28,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // ** สำคัญมาก: กำหนด URL ของ Backend Server ของคุณที่นี่ **
     // ** API Key ของ Gemini จะถูกเก็บไว้ที่ Backend Server **
-    const BACKEND_API_URL = 'https://6c9f-147-50-230-61.ngrok-free.app/generate-content';
+    const BACKEND_API_URL = 'https://2e89-147-50-230-61.ngrok-free.app/generate-content';
     // --- Global Variables ---
     let currentGeneratedText = '';
     const HISTORY_KEY = 'aiContentHistory';
