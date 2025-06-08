@@ -94,14 +94,26 @@ document.addEventListener('DOMContentLoaded', () => {
             elements.resultOutput.style.opacity = '0'; // ซ่อนไว้ก่อนเพื่อการแสดงผลที่ราบรื่น
             elements.resultOutput.style.transition = 'opacity 0.5s ease-in';
 
-        console.log('Markdown to parse:', typeof markdownText, markdownText); // เพิ่มบรรทัดนี้เพื่อ debug
+            console.log('Attempting to display Markdown. Type:', typeof markdownText, 'Content:', markdownText);
+
             try {
+                if (typeof marked === 'undefined' || typeof marked.parse !== 'function') {
+                    throw new Error('marked library is not loaded or not a function.');
+                }
+                if (typeof DOMPurify === 'undefined' || typeof DOMPurify.sanitize !== 'function') {
+                    throw new Error('DOMPurify library is not loaded or not a function.');
+                }
+                if (typeof markdownText !== 'string') {
+                    console.warn('markdownText is not a string. Attempting to convert. Original type:', typeof markdownText);
+                    markdownText = String(markdownText || ''); // Convert to string, ensure it's not null/undefined
+                }
+
                 // ใช้ marked.parse() เพื่อแปลง Markdown เป็น HTML ดิบ
                 const rawHtml = marked.parse(markdownText);
                 // ใช้ DOMPurify เพื่อ sanitize HTML ก่อนนำไปแสดงผล
                 elements.resultOutput.innerHTML = DOMPurify.sanitize(rawHtml);
             } catch (error) {
-                console.error("Error parsing Markdown:", error);
+                console.error("Detailed error during Markdown display:", error.stack || error); // Log full error stack
                 elements.resultOutput.innerHTML = "<p style='color:red;'>เกิดข้อผิดพลาดในการแสดงผล Markdown</p>";
             }
             elements.resultOutput.style.opacity = '1';
