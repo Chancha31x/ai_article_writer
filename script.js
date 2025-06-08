@@ -28,7 +28,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // ** สำคัญมาก: กำหนด URL ของ Backend Server ของคุณที่นี่ **
     // ** API Key ของ Gemini จะถูกเก็บไว้ที่ Backend Server **
-    const BACKEND_API_URL = 'https://c77e-49-237-45-59.ngrok-free.app/generate-content'; // <--- อัปเดตเป็น HTTPS และ IP ของ Ubuntu Server (Port 443 เป็น default ไม่ต้องระบุ)
+    const BACKEND_API_URL = 'https://1a08-49-237-45-59.ngrok-free.app/generate-content'; // <--- อัปเดตเป็น HTTPS และ IP ของ Ubuntu Server (Port 443 เป็น default ไม่ต้องระบุ)
     // --- Global Variables ---
     let currentGeneratedText = '';
     const HISTORY_KEY = 'aiContentHistory';
