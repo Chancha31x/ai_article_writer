@@ -609,9 +609,9 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
         } catch (error) {
-            console.error('Fetch error:', error);
+            console.error(`Fetch error to URL: ${BACKEND_API_URL}`, error); // Add URL to console log
             if (elements.resultOutput) {
-                elements.resultOutput.innerHTML = `<p style="color: red;">เกิดข้อผิดพลาด: ${error.message} <br>โปรดตรวจสอบ Server Backend, การเชื่อมต่ออินเทอร์เน็ต, หรือ URL ของ Backend ใน script.js</p>`;
+                elements.resultOutput.innerHTML = `<p style="color: red;">เกิดข้อผิดพลาด: ${error.message} <br>โปรดตรวจสอบ Server Backend, การเชื่อมต่ออินเทอร์เน็ต, หรือ URL ของ Backend (${BACKEND_API_URL}) ใน script.js</p>`;
             }
             showToast(`เกิดข้อผิดพลาด: ${error.message.substring(0, 50)}...`, 'error');
             if (elements.copyBtn) elements.copyBtn.style.display = 'none';
