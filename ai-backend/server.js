@@ -9,7 +9,7 @@ const path = require('path');     // <--- เพิ่ม: import path
 const fs = require('fs');         // <--- เพิ่ม: import fs
 
 const app = express();
-const PORT = process.env.PORT || 3001; // Port ที่เซิร์ฟเวอร์จะรัน
+const PORT = process.env.PORT || 8080; // Port ที่เซิร์ฟเวอร์จะรัน
 
 // --- ดึง API Keys จาก .env ---
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
