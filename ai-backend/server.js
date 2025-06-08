@@ -5,11 +5,12 @@ const cors = require('cors');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 const { OpenAI } = require('openai'); // OpenAI SDK is used for DeepSeek (OpenAI-compatible API)
 const morgan = require('morgan'); // <--- เพิ่ม: import morgan
+const rateLimit = require('express-rate-limit'); // <--- เพิ่ม: import express-rate-limit
 const path = require('path');     // <--- เพิ่ม: import path
 const fs = require('fs');         // <--- เพิ่ม: import fs
 
 const app = express();
-const PORT = process.env.PORT || 8080; // Port ที่เซิร์ฟเวอร์จะรัน
+const PORT = process.env.PORT || 8080; // เปลี่ยนเป็น Port ที่ต้องการ เช่น 8080
 
 // --- ดึง API Keys จาก .env ---
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
@@ -25,13 +26,40 @@ if (!DEEPSEEK_API_KEY) {
     // Consider exiting if DeepSeek is critical: process.exit(1);
 }
 
+// --- ตั้งค่า CORS ---
+const whitelist = ['https://ai-content-buddy.netlify.app', 'http://localhost:8080', 'http://127.0.0.1:8080']; // เพิ่ม localhost สำหรับการพัฒนา
+const corsOptions = {
+  origin: function (origin, callback) {
+    if (whitelist.indexOf(origin) !== -1 || !origin) { // อนุญาต !origin สำหรับการเรียกจาก server-to-server หรือ REST tools
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  }
+};
 // ตั้งค่า CORS เพื่อให้ Frontend เรียกได้
 // สำหรับการพัฒนา: อนุญาตทุกโดเมน
 // สำหรับการผลิต: กำหนดโดเมนของ Frontend ที่แน่นอน
-app.use(cors()); 
+app.use(cors(corsOptions));
+
+// --- เพิ่ม: การตั้งค่าให้ Express เชื่อถือ Reverse Proxy ---
+// หาก Node.js server ของคุณทำงานอยู่หลัง reverse proxy (เช่น Nginx)
+// การตั้งค่านี้จะช่วยให้ Express ใช้ IP address จาก X-Forwarded-For header
+// ซึ่งสำคัญสำหรับ rate limiting และ logging ให้ถูกต้อง
+app.set('trust proxy', 1); // '1' หมายถึงเชื่อถือ hop แรก (ตัว reverse proxy ที่อยู่ใกล้ที่สุด)
 
 // Middleware สำหรับการ Parse JSON Body
 app.use(express.json());
+
+// --- เพิ่ม: การตั้งค่า Rate Limiting ---
+const apiLimiter = rateLimit({
+	windowMs: 15 * 60 * 1000, // 15 นาที
+	max: 100, // จำกัดแต่ละ IP ให้เรียกได้ 100 ครั้งต่อ 15 นาที
+	standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
+	legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+    message: { error: 'Too many requests from this IP, please try again after 15 minutes' }
+});
+app.use('/generate-content', apiLimiter); // ใช้ limiter กับ endpoint นี้
 
 // --- เพิ่ม: การตั้งค่า Logging ด้วย Morgan ---
 // สร้าง write stream (ในโหมด append) สำหรับไฟล์ access.log
@@ -114,6 +142,11 @@ app.post('/generate-content', async (req, res) => {
         res.status(500).json({ error: "An error occurred while processing your request with the AI model." });
     }
 });
+
+    // เพิ่ม: Health Check Endpoint
+    app.get('/health', (req, res) => {
+      res.status(200).json({ status: 'ok', message: 'Backend is running!', timestamp: new Date().toISOString() });
+    });
 
 // กำหนด Host ที่จะให้ Server รับฟัง (0.0.0.0 หมายถึงทุก IPv4 interfaces)
 const HOST = '0.0.0.0';
